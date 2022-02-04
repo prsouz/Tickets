@@ -19,7 +19,6 @@ public class TicketGeneratorDaily extends TicketGenerator{
     @Override
     public TicketDataModel createTicket(TicketDataModel receivedTicketDataModel) throws NoSuchAlgorithmException, WriterException {
 
-
         TicketDataModel ticketDataModel = new TicketDataModel();
         ticketDataModel.setTokenID(tokenGenerator.getUniqueTokens());
         ticketDataModel.setQrCodeImage(qrCodeImageGenerator.getQrCode(ticketDataModel.getTokenID()));

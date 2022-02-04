@@ -56,7 +56,10 @@ public class ETicketRestControllerImpl implements ETicketRestController{
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, path = "/get_ticket")
     public ResponseEntity<CreatedTicketResponse> getTicket(String TokenId) {
-        return new ResponseEntity<CreatedTicketResponse>(HttpStatus.OK);
+
+        //To be Implemented
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
@@ -68,6 +71,9 @@ public class ETicketRestControllerImpl implements ETicketRestController{
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, path = "/balance_update")
     public ResponseEntity<BalanceUpdateResponse> balanceUpdate(@Valid @RequestBody BalanceUpdateRequest balanceUpdateRequest) {
+
+        //To be Implemented
+
         return null;
     }
 

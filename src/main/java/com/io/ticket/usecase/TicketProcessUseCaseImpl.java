@@ -25,6 +25,10 @@ public class TicketProcessUseCaseImpl implements TicketProcessUseCase{
     @Override
     public TicketDataModel processTicketGenerateRequest(TicketDataModel ticketDataModel) throws NoSuchAlgorithmException, WriterException {
 
+        String sqsErrormsg = "Error to the msg to SQS. MSG: ";
+        String persistenceErrormsg = "Error to process to persiste the ticket Request in DataBase. MSG: ";
+        String genericErrormsg = "Error to process the ticket Request. MSG: ";
+
         switch (ticketDataModel.getTicketType()){
             case DAILY_TICKET:
                 try{
@@ -36,25 +40,61 @@ public class TicketProcessUseCaseImpl implements TicketProcessUseCase{
                     return createdTicket;
 
                 } catch (ResponseStatusException rse){
-                    log.error("Error to the msg to SQS. MSG: " + rse.getMessage());
+                    log.error(sqsErrormsg + rse.getMessage());
                     throw rse;
 
                 } catch (PersistenceException ps){
-                    log.error("Error to process to persiste the ticket Request in DataBase. MSG: " + ps.getMessage());
+                    log.error(persistenceErrormsg + ps.getMessage());
                     throw ps;
 
                 } catch (Exception ex){
-                    log.error("Error to process the ticket Request. MSG: " + ex.getMessage());
+                    log.error(genericErrormsg + ex.getMessage());
                     throw ex;
                 }
 
             case MONTHY_TICKET:
-                TicketGenerator ticketGeneratorMonthly = new TicketGeneratorMonthly();
-                return ticketGeneratorMonthly.createTicket(ticketDataModel);
+                try{
+                    TicketGenerator ticketGeneratorMonthly = new TicketGeneratorMonthly();
+                    TicketDataModel createdTicket = ticketGeneratorMonthly.createTicket(ticketDataModel);
+                    createdTicket = ticketRepository.saveTicket(createdTicket);
+                    senderSqsLambdaPort.sendTicketToSqsLambda(createdTicket);
+
+                    return createdTicket;
+
+                } catch (ResponseStatusException rse){
+                    log.error(sqsErrormsg + rse.getMessage());
+                    throw rse;
+
+                } catch (PersistenceException ps){
+                    log.error(persistenceErrormsg + ps.getMessage());
+                    throw ps;
+
+                } catch (Exception ex){
+                    log.error(genericErrormsg + ex.getMessage());
+                    throw ex;
+                }
 
             case SCHEDULED_TICKET:
-                TicketGenerator ticketGeneratorScheduled = new TicketGeneratorScheduled();
-                return ticketGeneratorScheduled.createTicket(ticketDataModel);
+                try{
+                    TicketGenerator ticketGeneratorScheduled = new TicketGeneratorScheduled();
+                    TicketDataModel createdTicket = ticketGeneratorScheduled.createTicket(ticketDataModel);
+                    createdTicket = ticketRepository.saveTicket(createdTicket);
+                    senderSqsLambdaPort.sendTicketToSqsLambda(createdTicket);
+
+                    return createdTicket;
+
+                } catch (ResponseStatusException rse){
+                    log.error(sqsErrormsg + rse.getMessage());
+                    throw rse;
+
+                } catch (PersistenceException ps){
+                    log.error(persistenceErrormsg + ps.getMessage());
+                    throw ps;
+
+                } catch (Exception ex){
+                    log.error(genericErrormsg + ex.getMessage());
+                    throw ex;
+                }
 
             default:
                 return null;

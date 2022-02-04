@@ -6,23 +6,34 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Component
 @Log4j2
 public class TicketGeneratorMonthly extends TicketGenerator{
 
+    TokenGenerator tokenGenerator = new TokenGeneratorImpl();
+
+    QrCodeImageGenerator qrCodeImageGenerator = new QrCodeImageGeneratorImpl();
+
     @Override
     public TicketDataModel createTicket(TicketDataModel receivedTicketDataModel) throws NoSuchAlgorithmException, WriterException {
 
-        Integer lastDayOfTheMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
-        System.out.println(lastDayOfTheMonth);
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DATE, cal.getActualMaximum(Calendar.DATE));
-        Date lastDay = cal.getTime();
-        System.out.println(lastDay);
+        TicketDataModel ticketDataModel = new TicketDataModel();
+        ticketDataModel.setTokenID(tokenGenerator.getUniqueTokens());
+        ticketDataModel.setQrCodeImage(qrCodeImageGenerator.getQrCode(ticketDataModel.getTokenID()));
+        ticketDataModel.setAccountID(receivedTicketDataModel.getAccountID());
+        ticketDataModel.setTokenExpireDate(getLastDayOfMonth());
+        ticketDataModel.setTicketType(receivedTicketDataModel.getTicketType());
+        ticketDataModel.setTokenStatus(true);
+        log.info("TicketDataModel Created: " + ticketDataModel);
 
-        return null;
+        return ticketDataModel;
+    }
+
+    private LocalDate getLastDayOfMonth(){
+        return YearMonth.now().atEndOfMonth();
+
     }
 }
