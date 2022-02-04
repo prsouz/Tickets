@@ -3,9 +3,11 @@ package com.io.ticket.usecase;
 import com.google.zxing.WriterException;
 import com.io.ticket.infrastructure.Repository.TicketRepository;
 import com.io.ticket.models.TicketDataModel;
+import com.io.ticket.ports.out.SenderSqsLambdaPort;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.PersistenceException;
 import java.security.NoSuchAlgorithmException;
@@ -17,6 +19,9 @@ public class TicketProcessUseCaseImpl implements TicketProcessUseCase{
     @Autowired
     TicketRepository ticketRepository;
 
+    @Autowired
+    SenderSqsLambdaPort senderSqsLambdaPort;
+
     @Override
     public TicketDataModel processTicketGenerateRequest(TicketDataModel ticketDataModel) throws NoSuchAlgorithmException, WriterException {
 
@@ -26,8 +31,13 @@ public class TicketProcessUseCaseImpl implements TicketProcessUseCase{
                     TicketGenerator ticketGeneratorDaily = new TicketGeneratorDaily();
                     TicketDataModel createdTicket = ticketGeneratorDaily.createTicket(ticketDataModel);
                     createdTicket = ticketRepository.saveTicket(createdTicket);
+                    senderSqsLambdaPort.sendTicketToSqsLambda(createdTicket);
 
                     return createdTicket;
+
+                } catch (ResponseStatusException rse){
+                    log.error("Error to the msg to SQS. MSG: " + rse.getMessage());
+                    throw rse;
 
                 } catch (PersistenceException ps){
                     log.error("Error to process to persiste the ticket Request in DataBase. MSG: " + ps.getMessage());
