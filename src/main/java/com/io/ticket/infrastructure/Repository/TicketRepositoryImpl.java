@@ -12,19 +12,18 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.PersistenceException;
 
-
 @Repository
 @Log4j2
 public class TicketRepositoryImpl implements TicketRepository{
 
     @Autowired
-    TicketEntityFactory ticketEntityFactory;
+    private TicketEntityFactory ticketEntityFactory;
 
     @Autowired
-    CrudTicketEntity crudTicketEntity;
+    private CrudTicketEntity crudTicketEntity;
 
     @Autowired
-    TicketDataModelFactory ticketDataModelFactory;
+    private TicketDataModelFactory ticketDataModelFactory;
 
     @Override
     public TicketDataModel saveTicket(TicketDataModel ticketDataModel) throws WriterException {
